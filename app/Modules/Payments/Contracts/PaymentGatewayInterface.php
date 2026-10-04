@@ -14,4 +14,8 @@ interface PaymentGatewayInterface
     public function initialize(Payment $payment, User $user, string $redirectUrl): PaymentInitialization;
 
     public function verify(string $transactionId): PaymentVerification;
+
+    public function verifyByReference(string $txRef): PaymentVerification;
+
+    public function quote(string $amountUsd, string $currency): string;
 }

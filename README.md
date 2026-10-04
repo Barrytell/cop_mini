@@ -76,7 +76,21 @@ Tests use an in-memory SQLite database. Money math uses decimal strings and BCMa
 - Unit balances are the sum of append-only `units_ledger` rows (signed integers).
 - Units credited = `amount_usd / unit_price_snapshot`, truncated toward zero.
 - Successful payments and ledger rows cannot be updated or deleted.
+- A collected charge must be at least the quoted amount, in the currency sent to Flutterwave. Units are still the snapshotted USD amount divided by the snapshotted unit price.
 - Referral bonus uses the `referral_bonus_units` setting at the moment the referred member becomes active, and it is written once.
+
+## Flutterwave
+
+Hosted checkout uses Flutterwave API v3. In the Flutterwave dashboard:
+
+1. Copy the public key, secret key, and encryption key into `FLW_PUBLIC_KEY`, `FLW_SECRET_KEY`, and `FLW_ENCRYPTION_KEY`.
+2. Set a secret hash and put the same value in `FLW_WEBHOOK_HASH`.
+3. Set the webhook URL to `https://minimini.org/webhooks/flutterwave`. Flutterwave sends `charge.completed` and failed events with the `verif-hash` header. The endpoint is exempt from CSRF and checks that header before it does anything else.
+4. Set `FLW_REDIRECT_URL` to `https://minimini.org/member/payments/callback`. The callback reads the transaction id only so it can ask Flutterwave to verify. It does not trust the status or amount in the query string.
+
+Every confirmation goes through `ConfirmPayment`, which locks the payment row. The same transaction reference can be processed twice and will credit units only once. Pending payments older than 10 minutes are re-checked hourly by `php artisan payments:reconcile` (scheduled). A checkout with no Flutterwave transaction after 24 hours is marked cancelled. The member can start a new payment, and a late successful webhook can still confirm a cancelled row.
+
+Units are calculated from the USD amount. If the member pays in another supported currency, Flutterwave's rate endpoint supplies the charge amount. Card, bank transfer, USSD, and mobile money are requested through `payment_options` for the currencies that support them.
 
 ## Admin
 
@@ -92,10 +106,11 @@ Tests use an in-memory SQLite database. Money math uses decimal strings and BCMa
 6. `php artisan migrate --force`
 7. `php artisan config:cache && php artisan route:cache && php artisan view:cache`
 8. Run `php artisan queue:work database --sleep=1 --tries=3` under a process supervisor.
-9. Schedule `php artisan schedule:run` every minute.
+9. Schedule `php artisan schedule:run` every minute. That runs `payments:reconcile` hourly.
 10. Keep secrets in the server environment only. Do not commit `.env`.
+11. Run a queue worker so payment receipts and referral mail leave the database queue.
 
-Flutterwave must send webhooks to `https://minimini.org/webhooks/flutterwave` with the `verif-hash` header set to `FLUTTERWAVE_SECRET_HASH`. The app confirms every payment with Flutterwave's verify endpoint before crediting units.
+Flutterwave dashboard setup is in the Flutterwave section above. The app confirms every payment with Flutterwave's verify endpoint before crediting units.
 
 ## Module map
 

@@ -28,6 +28,8 @@ class PaymentFactory extends Factory
             'tx_ref' => 'MM-'.Str::ulid(),
             'flw_transaction_id' => null,
             'amount_usd' => '10.00',
+            'charge_currency' => 'USD',
+            'charge_amount' => '10.00',
             'currency_paid' => null,
             'amount_paid' => null,
             'unit_price_snapshot' => '0.010000',

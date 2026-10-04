@@ -8,7 +8,7 @@ use App\Modules\Payments\Models\Payment;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class PaymentSucceeded
+class PaymentConfirmed
 {
     use Dispatchable, SerializesModels;
 

@@ -20,7 +20,8 @@
                 @if ($member->status->value === 'active')
                     <a href="{{ route('member.dashboard') }}" class="inline-flex min-h-11 items-center rounded-full px-3 text-sm font-semibold hover:bg-cream">Dashboard</a>
                 @endif
-                <a href="{{ route('member.activate') }}" class="inline-flex min-h-11 items-center rounded-full px-3 text-sm font-semibold hover:bg-cream">{{ $member->status->value === 'pending' ? 'Activate' : 'Buy units' }}</a>
+                <a href="{{ $member->status->value === 'pending' ? route('member.activate') : route('member.units.buy') }}" class="inline-flex min-h-11 items-center rounded-full px-3 text-sm font-semibold hover:bg-cream">{{ $member->status->value === 'pending' ? 'Activate' : 'Buy units' }}</a>
+                <a href="{{ route('member.payments.index') }}" class="inline-flex min-h-11 items-center rounded-full px-3 text-sm font-semibold hover:bg-cream">Payments</a>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit" class="inline-flex min-h-11 items-center rounded-full px-3 text-sm font-semibold hover:bg-cream">Log out</button>
@@ -50,7 +51,8 @@
                 @if ($member->status->value === 'active')
                     <a href="{{ route('member.dashboard') }}" class="inline-flex min-h-11 items-center rounded-xl px-3 font-semibold">Dashboard</a>
                 @endif
-                <a href="{{ route('member.activate') }}" class="inline-flex min-h-11 items-center rounded-xl px-3 font-semibold">{{ $member->status->value === 'pending' ? 'Activate' : 'Buy units' }}</a>
+                <a href="{{ $member->status->value === 'pending' ? route('member.activate') : route('member.units.buy') }}" class="inline-flex min-h-11 items-center rounded-xl px-3 font-semibold">{{ $member->status->value === 'pending' ? 'Activate' : 'Buy units' }}</a>
+                <a href="{{ route('member.payments.index') }}" class="inline-flex min-h-11 items-center rounded-xl px-3 font-semibold">Payments</a>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit" class="inline-flex min-h-11 w-full items-center rounded-xl px-3 text-left font-semibold">Log out</button>

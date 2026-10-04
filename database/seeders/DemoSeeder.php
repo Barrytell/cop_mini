@@ -12,7 +12,7 @@ use App\Modules\Announcements\Models\Announcement;
 use App\Modules\Cms\Models\Banner;
 use App\Modules\Cms\Models\Page;
 use App\Modules\Meetings\Models\Meeting;
-use App\Modules\Payments\Actions\VerifyPayment;
+use App\Modules\Payments\Actions\ConfirmPayment;
 use App\Modules\Payments\Data\PaymentVerification;
 use App\Modules\Payments\Models\Payment;
 use App\Modules\Referrals\Actions\AttachReferral;
@@ -135,7 +135,7 @@ class DemoSeeder extends Seeder
 
         $raw = '{"status":"success","data":{"id":'.$user->id.',"tx_ref":"'.$txRef.'","amount":"10.00","currency":"USD","status":"successful"}}';
 
-        app(VerifyPayment::class)->handle($payment, new PaymentVerification(
+        app(ConfirmPayment::class)->handle($payment, new PaymentVerification(
             successful: true,
             transactionId: (string) $user->id,
             txRef: $txRef,

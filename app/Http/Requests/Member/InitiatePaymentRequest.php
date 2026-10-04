@@ -7,6 +7,7 @@ namespace App\Http\Requests\Member;
 use App\Enums\UserStatus;
 use App\Support\Money;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use InvalidArgumentException;
 
 class InitiatePaymentRequest extends FormRequest
@@ -22,8 +23,11 @@ class InitiatePaymentRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        $currency = strtoupper(trim((string) $this->input('currency', 'USD')));
+
         $this->merge([
             'amount_usd' => trim((string) $this->input('amount_usd')),
+            'currency' => $currency === '' ? 'USD' : $currency,
         ]);
     }
 
@@ -55,6 +59,17 @@ class InitiatePaymentRequest extends FormRequest
                     }
                 },
             ],
+            'currency' => ['required', 'string', Rule::in(array_keys($this->currencies()))],
         ];
+    }
+
+    /**
+     * @return array<string, array{label?: string, options?: string}>
+     */
+    private function currencies(): array
+    {
+        $currencies = config('services.flutterwave.currencies');
+
+        return is_array($currencies) ? $currencies : [];
     }
 }

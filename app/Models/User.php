@@ -58,11 +58,13 @@ class User extends Authenticatable implements MustVerifyEmail
         });
 
         static::created(function (User $user): void {
-            if (str_starts_with((string) $user->member_no, 'TMP-')) {
-                $user->forceFill([
-                    'member_no' => sprintf('MM-%06d', $user->id),
-                ])->saveQuietly();
+            if ($user->status === UserStatus::Pending || ! str_starts_with((string) $user->member_no, 'TMP-')) {
+                return;
             }
+
+            $user->forceFill([
+                'member_no' => sprintf('MM-%06d', $user->id),
+            ])->saveQuietly();
         });
     }
 

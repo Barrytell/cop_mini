@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
-use App\Modules\Payments\Events\PaymentSucceeded;
+use App\Modules\Payments\Events\PaymentConfirmed;
 use App\Notifications\UnitsPurchased;
 
-class SendUnitsPurchasedNotification
+class SendPaymentReceipt
 {
-    public function handle(PaymentSucceeded $event): void
+    public function handle(PaymentConfirmed $event): void
     {
         $payment = $event->payment->loadMissing('user');
         $payment->user?->notify(new UnitsPurchased($payment));

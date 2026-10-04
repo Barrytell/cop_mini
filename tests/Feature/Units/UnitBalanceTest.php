@@ -10,7 +10,7 @@ use App\Enums\PaymentType;
 use App\Enums\ReferralStatus;
 use App\Enums\UserStatus;
 use App\Models\User;
-use App\Modules\Payments\Actions\VerifyPayment;
+use App\Modules\Payments\Actions\ConfirmPayment;
 use App\Modules\Payments\Data\PaymentVerification;
 use App\Modules\Payments\Exceptions\ImmutablePaymentException;
 use App\Modules\Payments\Models\Payment;
@@ -83,10 +83,11 @@ class UnitBalanceTest extends TestCase
             'status' => PaymentStatus::Pending,
         ]);
 
-        $confirmed = app(VerifyPayment::class)->handle($payment, $this->verification($payment));
+        $confirmed = app(ConfirmPayment::class)->handle($payment, $this->verification($payment));
 
         $this->assertSame(PaymentStatus::Successful, $confirmed->status);
         $this->assertSame(UserStatus::Active, $member->fresh()->status);
+        $this->assertMatchesRegularExpression('/^MM-\d{6}$/', $member->fresh()->member_no);
         $this->assertSame(1000, app(UnitBalanceService::class)->balance($member));
         $this->assertSame(2, app(UnitBalanceService::class)->balance($referrer));
         $this->assertSame(ReferralStatus::Rewarded, $member->referralReceived->status);
@@ -101,7 +102,7 @@ class UnitBalanceTest extends TestCase
             'status' => PaymentStatus::Pending,
         ]);
 
-        app(VerifyPayment::class)->handle($topUp, $this->verification($topUp));
+        app(ConfirmPayment::class)->handle($topUp, $this->verification($topUp));
 
         $this->assertSame(2000, app(UnitBalanceService::class)->balance($member->fresh()));
         $this->assertSame(2, app(UnitBalanceService::class)->balance($referrer->fresh()));
@@ -117,7 +118,7 @@ class UnitBalanceTest extends TestCase
             'units_purchased' => 1000,
         ]);
 
-        $action = app(VerifyPayment::class);
+        $action = app(ConfirmPayment::class);
         $verification = $this->verification($payment);
         $action->handle($payment, $verification);
         $action->handle($payment->fresh(), $verification);
@@ -134,7 +135,7 @@ class UnitBalanceTest extends TestCase
             'units_purchased' => 1000,
         ]);
 
-        $result = app(VerifyPayment::class)->handle($payment, new PaymentVerification(
+        $result = app(ConfirmPayment::class)->handle($payment, new PaymentVerification(
             successful: false,
             transactionId: '9002',
             txRef: $payment->tx_ref,
@@ -156,7 +157,7 @@ class UnitBalanceTest extends TestCase
             'units_purchased' => 1000,
         ]);
 
-        $result = app(VerifyPayment::class)->handle($payment, new PaymentVerification(
+        $result = app(ConfirmPayment::class)->handle($payment, new PaymentVerification(
             successful: true,
             transactionId: '9003',
             txRef: 'SOME-OTHER-REF',

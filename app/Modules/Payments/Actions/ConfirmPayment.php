@@ -9,8 +9,9 @@ use App\Enums\PaymentStatus;
 use App\Enums\PaymentType;
 use App\Enums\UserStatus;
 use App\Models\User;
+use App\Modules\Members\Actions\AssignMemberNumber;
 use App\Modules\Payments\Data\PaymentVerification;
-use App\Modules\Payments\Events\PaymentSucceeded;
+use App\Modules\Payments\Events\PaymentConfirmed;
 use App\Modules\Payments\Models\Payment;
 use App\Modules\Referrals\Actions\RewardReferral;
 use App\Modules\Units\Actions\AppendLedgerEntry;
@@ -18,11 +19,12 @@ use App\Support\Money;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 
-class VerifyPayment
+class ConfirmPayment
 {
     public function __construct(
         private readonly AppendLedgerEntry $appendLedgerEntry,
         private readonly RewardReferral $rewardReferral,
+        private readonly AssignMemberNumber $assignMemberNumber,
     ) {}
 
     public function handle(Payment $payment, PaymentVerification $verification): Payment
@@ -49,27 +51,29 @@ class VerifyPayment
                 return $locked;
             }
 
-            // A verified transaction for a different tx_ref must not fail this row.
             if ($verification->txRef === '' || ! hash_equals($locked->tx_ref, $verification->txRef)) {
                 return $locked;
             }
 
-            // Flutterwave can still be processing. Leave the payment pending so a later
-            // webhook can complete it.
             if (in_array($verification->gatewayStatus, ['pending', 'processing'], true)) {
                 return $locked;
             }
 
+            $expectedCurrency = strtoupper((string) ($locked->charge_currency ?: 'USD'));
+            $expectedAmount = $locked->charge_amount !== null && (string) $locked->charge_amount !== ''
+                ? (string) $locked->charge_amount
+                : (string) $locked->amount_usd;
+
             $matches = $verification->successful
-                && $verification->currency === 'USD'
-                && Money::compare($verification->amount, (string) $locked->amount_usd) === 0;
+                && $verification->currency === $expectedCurrency
+                && Money::compare($verification->amount, $expectedAmount) >= 0;
 
             if (! $matches) {
                 $locked->forceFill([
                     'status' => in_array($verification->gatewayStatus, ['cancelled', 'canceled'], true)
                         ? PaymentStatus::Cancelled
                         : PaymentStatus::Failed,
-                    'flw_transaction_id' => $verification->transactionId !== '' ? $verification->transactionId : null,
+                    'flw_transaction_id' => $verification->transactionId !== '' ? $verification->transactionId : $locked->flw_transaction_id,
                     'currency_paid' => $verification->currency !== '' ? $verification->currency : null,
                     'amount_paid' => $verification->amount,
                     'gateway_payload' => ['raw' => $verification->rawBody],
@@ -99,12 +103,15 @@ class VerifyPayment
 
             if ($locked->type === PaymentType::Initial && $user->status === UserStatus::Pending) {
                 $user->forceFill(['status' => UserStatus::Active])->save();
+                $this->assignMemberNumber->handle($user);
                 $this->rewardReferral->handle($user->refresh());
             }
 
-            DB::afterCommit(fn () => PaymentSucceeded::dispatch($locked->fresh()));
+            $confirmed = $locked->refresh();
 
-            return $locked->refresh();
+            DB::afterCommit(fn () => PaymentConfirmed::dispatch($confirmed));
+
+            return $confirmed;
         });
     }
 }

@@ -30,7 +30,7 @@ class RegistrationTest extends TestCase
         $this->assertNotNull($user);
         $this->assertSame(UserStatus::Pending, $user->status);
         $this->assertSame('member', $user->role->value);
-        $this->assertMatchesRegularExpression('/^MM-\d{6}$/', $user->member_no);
+        $this->assertMatchesRegularExpression('/^TMP-[0-9A-Z]+$/', $user->member_no);
         $this->assertMatchesRegularExpression('/^[A-Z0-9]{8}$/', $user->referral_code);
         $this->assertTrue(password_verify('Password1', $user->password));
         Notification::assertSentTo($user, VerifyEmail::class);

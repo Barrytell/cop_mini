@@ -23,6 +23,8 @@ class Payment extends Model
         'tx_ref',
         'flw_transaction_id',
         'amount_usd',
+        'charge_currency',
+        'charge_amount',
         'currency_paid',
         'amount_paid',
         'unit_price_snapshot',
@@ -37,6 +39,7 @@ class Payment extends Model
     {
         return [
             'amount_usd' => 'decimal:2',
+            'charge_amount' => 'decimal:2',
             'amount_paid' => 'decimal:2',
             'unit_price_snapshot' => 'decimal:6',
             'units_purchased' => 'integer',
@@ -54,7 +57,7 @@ class Payment extends Model
                 throw new ImmutablePaymentException('Successful payments are immutable.');
             }
 
-            foreach (['user_id', 'tx_ref', 'amount_usd', 'unit_price_snapshot', 'units_purchased', 'type'] as $field) {
+            foreach (['user_id', 'tx_ref', 'amount_usd', 'charge_currency', 'charge_amount', 'unit_price_snapshot', 'units_purchased', 'type'] as $field) {
                 if (! $payment->isDirty($field)) {
                     continue;
                 }

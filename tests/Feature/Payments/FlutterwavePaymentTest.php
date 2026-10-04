@@ -21,9 +21,12 @@ class FlutterwavePaymentTest extends TestCase
         parent::setUp();
 
         config([
-            'flutterwave.secret_key' => 'test-secret',
-            'flutterwave.secret_hash' => 'test-hash',
-            'flutterwave.base_url' => 'https://api.flutterwave.com',
+            'services.flutterwave.secret_key' => 'test-secret',
+            'services.flutterwave.webhook_hash' => 'test-hash',
+            'services.flutterwave.encryption_key' => 'test-encryption',
+            'services.flutterwave.public_key' => 'test-public',
+            'services.flutterwave.base_url' => 'https://api.flutterwave.com',
+            'services.flutterwave.redirect_url' => '',
         ]);
     }
 

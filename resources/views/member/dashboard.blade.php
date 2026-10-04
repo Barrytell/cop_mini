@@ -17,10 +17,35 @@
 
     <section class="mt-8 rounded-3xl bg-white p-5 ring-1 ring-stone-200">
         <h2 class="font-serif text-2xl">Buy units</h2>
-        <div class="mt-4">
-            @include('member.partials.buy-units')
-        </div>
+        <p class="mt-2 text-stone-700">Add units at the current price of ${{ rtrim(rtrim($unitPrice, '0'), '.') }}.</p>
+        <a href="{{ route('member.units.buy') }}" class="btn-primary mt-4">Buy units</a>
     </section>
+
+    @if ($notifications->isNotEmpty())
+        <section class="mt-8">
+            <h2 class="font-serif text-2xl">Notifications</h2>
+            <div class="mt-4 space-y-3">
+                @foreach ($notifications as $notification)
+                    <article class="rounded-2xl bg-white p-4 ring-1 ring-stone-200">
+                        <p class="font-semibold">{{ $notification->data['tx_ref'] ?? 'Update' }}</p>
+                        <p class="mt-1 text-sm text-stone-700">
+                            @if (isset($notification->data['units']))
+                                {{ number_format((int) $notification->data['units']) }} units
+                                @if (! empty($notification->data['amount_usd']))
+                                    from ${{ $notification->data['amount_usd'] }}
+                                @endif
+                            @elseif (isset($notification->data['bonus_units']))
+                                Referral bonus of {{ number_format((int) $notification->data['bonus_units']) }} units
+                            @else
+                                {{ $notification->type }}
+                            @endif
+                        </p>
+                        <p class="mt-1 text-xs text-stone-500">{{ $notification->created_at->timezone(config('app.timezone'))->format('M j, Y g:i A') }}</p>
+                    </article>
+                @endforeach
+            </div>
+        </section>
+    @endif
 
     <section class="mt-8">
         <h2 class="font-serif text-2xl">Ledger</h2>

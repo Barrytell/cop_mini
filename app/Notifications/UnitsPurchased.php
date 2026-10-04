@@ -27,11 +27,15 @@ class UnitsPurchased extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Your minimini.org units are in')
+            ->subject('Receipt '.$this->payment->tx_ref)
             ->greeting('Hello '.$notifiable->name)
-            ->line('Payment '.$this->payment->tx_ref.' was confirmed.')
-            ->line(number_format((int) $this->payment->units_purchased).' units were added to your account.')
-            ->action('Open your dashboard', route('member.dashboard'));
+            ->line('Your payment was confirmed.')
+            ->line('Reference: '.$this->payment->tx_ref)
+            ->line('USD amount: $'.$this->payment->amount_usd)
+            ->line('Charged: '.$this->payment->amount_paid.' '.$this->payment->currency_paid)
+            ->line(number_format((int) $this->payment->units_purchased).' units at $'.$this->payment->unit_price_snapshot.' each.')
+            ->line('Member number: '.$notifiable->member_no)
+            ->action('View payment history', route('member.payments.index'));
     }
 
     /**
@@ -44,6 +48,9 @@ class UnitsPurchased extends Notification implements ShouldQueue
             'tx_ref' => $this->payment->tx_ref,
             'units' => (int) $this->payment->units_purchased,
             'amount_usd' => (string) $this->payment->amount_usd,
+            'amount_paid' => (string) $this->payment->amount_paid,
+            'currency_paid' => (string) $this->payment->currency_paid,
+            'member_no' => $notifiable->member_no,
         ];
     }
 }

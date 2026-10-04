@@ -14,6 +14,8 @@ class DashboardController extends Controller
     public function __invoke(Request $request, UnitBalanceService $balances): View
     {
         $user = $request->user();
+        $notifications = $user->notifications()->latest()->limit(8)->get();
+        $user->unreadNotifications->markAsRead();
 
         return view('member.dashboard', [
             'balance' => $balances->balance($user),
@@ -22,6 +24,7 @@ class DashboardController extends Controller
             'ledger' => $user->ledgerEntries()->latest()->limit(15)->get(),
             'referrals' => $user->referralsMade()->with('referred')->latest()->limit(10)->get(),
             'referralLink' => route('register', ['ref' => $user->referral_code]),
+            'notifications' => $notifications,
         ]);
     }
 }

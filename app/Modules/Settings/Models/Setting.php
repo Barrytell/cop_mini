@@ -32,6 +32,12 @@ class Setting extends Model
 
     public const MAP_EMBED_URL = 'map_embed_url';
 
+    public const REGISTRATION_OPEN = 'registration_open';
+
+    public const REFERRAL_PROGRAM_ENABLED = 'referral_program_enabled';
+
+    public const MAINTENANCE_MODE = 'maintenance_mode';
+
     /**
      * @var array<string, array{type: SettingType, group: string}>
      */
@@ -45,6 +51,9 @@ class Setting extends Model
         self::WHATSAPP_NUMBER => ['type' => SettingType::String, 'group' => 'general'],
         self::OFFICE_ADDRESS => ['type' => SettingType::String, 'group' => 'general'],
         self::MAP_EMBED_URL => ['type' => SettingType::String, 'group' => 'general'],
+        self::REGISTRATION_OPEN => ['type' => SettingType::Boolean, 'group' => 'general'],
+        self::REFERRAL_PROGRAM_ENABLED => ['type' => SettingType::Boolean, 'group' => 'referrals'],
+        self::MAINTENANCE_MODE => ['type' => SettingType::Boolean, 'group' => 'general'],
     ];
 
     protected $fillable = [

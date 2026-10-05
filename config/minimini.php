@@ -13,6 +13,9 @@ return [
         'whatsapp_number' => '',
         'office_address' => "12 Marina Road\nLagos Island\nLagos, Nigeria",
         'map_embed_url' => 'https://www.openstreetmap.org/export/embed.html?bbox=3.379%2C6.443%2C3.410%2C6.460&layer=mapnik&marker=6.4549%2C3.3947',
+        'registration_open' => true,
+        'referral_program_enabled' => true,
+        'maintenance_mode' => false,
         'social_links' => [
             'facebook' => '',
             'x' => '',

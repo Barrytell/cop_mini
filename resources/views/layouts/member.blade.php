@@ -10,6 +10,17 @@
 </head>
 <body class="min-h-screen overflow-x-hidden bg-cream font-sans text-ink" x-data="{ navOpen: false }" :class="{ 'overflow-hidden': navOpen }" @keydown.escape.window="navOpen = false">
     <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-white focus:px-4 focus:py-3">Skip to content</a>
+    @if(session()->has('impersonator_id'))
+        <div class="bg-gold-500 px-4 py-3 text-ink">
+            <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3">
+                <p class="font-semibold">You are impersonating {{ auth()->user()?->name }}. Actions are audited.</p>
+                <form method="POST" action="{{ route('admin.impersonate.stop') }}">
+                    @csrf
+                    <button type="submit" class="inline-flex min-h-11 items-center rounded-full bg-ink px-4 font-semibold text-cream">Return to admin</button>
+                </form>
+            </div>
+        </div>
+    @endif
     @php
         $member = auth()->user();
         $active = $member->status->value === 'active';

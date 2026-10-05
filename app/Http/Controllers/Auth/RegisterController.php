@@ -17,6 +17,8 @@ class RegisterController extends Controller
 {
     public function create(Request $request): View
     {
+        abort_unless((bool) setting('registration_open', true), 403, 'Registration is closed.');
+
         $code = strtoupper(trim((string) $request->query('ref', '')));
 
         if ($code !== '' && User::query()->where('referral_code', $code)->exists()) {
@@ -41,6 +43,8 @@ class RegisterController extends Controller
 
     public function store(RegisterRequest $request, RegisterMember $registerMember, RedirectsAuthenticatedUser $redirects): RedirectResponse
     {
+        abort_unless((bool) setting('registration_open', true), 403, 'Registration is closed.');
+
         $user = $registerMember->handle([
             'name' => $request->string('name')->toString(),
             'email' => $request->string('email')->toString(),

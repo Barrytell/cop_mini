@@ -15,7 +15,7 @@ class CaptureReferralCode
     {
         $ref = $request->query('ref');
 
-        if (! is_string($ref) || str_starts_with($request->path(), 'webhooks')) {
+        if (! is_string($ref) || str_starts_with($request->path(), 'webhooks') || ! (bool) setting('referral_program_enabled', true)) {
             return $next($request);
         }
 

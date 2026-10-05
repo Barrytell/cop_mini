@@ -21,6 +21,13 @@ class Announcement extends Model
         'created_by',
         'title',
         'body',
+        'audience',
+        'audience_user_ids',
+        'is_pinned',
+        'scheduled_for',
+        'send_email',
+        'send_notification',
+        'attachment_path',
         'is_published',
         'published_at',
     ];
@@ -29,6 +36,11 @@ class Announcement extends Model
     {
         return [
             'is_published' => 'boolean',
+            'is_pinned' => 'boolean',
+            'send_email' => 'boolean',
+            'send_notification' => 'boolean',
+            'audience_user_ids' => 'array',
+            'scheduled_for' => 'datetime',
             'published_at' => 'datetime',
         ];
     }

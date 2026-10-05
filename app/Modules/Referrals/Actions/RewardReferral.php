@@ -20,6 +20,10 @@ class RewardReferral
 
     public function handle(User $referred): ?Referral
     {
+        if (! (bool) setting('referral_program_enabled', true)) {
+            return Referral::query()->where('referred_id', $referred->id)->first();
+        }
+
         return DB::transaction(function () use ($referred): ?Referral {
             $referral = Referral::query()
                 ->where('referred_id', $referred->id)

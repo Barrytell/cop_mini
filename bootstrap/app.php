@@ -1,8 +1,11 @@
 <?php
 
+use App\Http\Middleware\BlockWhenMaintenance;
 use App\Http\Middleware\CaptureReferralCode;
 use App\Http\Middleware\EnsureAccountIsNotSuspended;
+use App\Http\Middleware\EnsureAdminPermission;
 use App\Http\Middleware\EnsureMemberIsActive;
+use App\Http\Middleware\EnsureTotpVerified;
 use App\Http\Middleware\EnsureUserHasRole;
 use App\Http\Middleware\SecurityHeaders;
 use App\Support\RedirectsAuthenticatedUser;
@@ -25,11 +28,14 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => EnsureUserHasRole::class,
             'account.not_suspended' => EnsureAccountIsNotSuspended::class,
             'member.active' => EnsureMemberIsActive::class,
+            'admin.permission' => EnsureAdminPermission::class,
+            'admin.totp' => EnsureTotpVerified::class,
         ]);
 
         $middleware->web(append: [
             SecurityHeaders::class,
             CaptureReferralCode::class,
+            BlockWhenMaintenance::class,
         ]);
 
         $middleware->validateCsrfTokens(except: [

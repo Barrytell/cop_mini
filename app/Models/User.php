@@ -47,6 +47,9 @@ class User extends Authenticatable implements MustVerifyEmail
         'password',
         'role',
         'status',
+        'permissions',
+        'totp_secret',
+        'totp_confirmed_at',
         'referral_code',
         'referred_by',
         'email_verified_at',
@@ -56,6 +59,7 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $hidden = [
         'password',
         'remember_token',
+        'totp_secret',
     ];
 
     protected static function booted(): void
@@ -99,7 +103,15 @@ class User extends Authenticatable implements MustVerifyEmail
             'notify_payments' => 'boolean',
             'notify_announcements' => 'boolean',
             'notify_meetings' => 'boolean',
+            'permissions' => 'array',
+            'totp_secret' => 'encrypted',
+            'totp_confirmed_at' => 'datetime',
         ];
+    }
+
+    public function canAccess(string $permission): bool
+    {
+        return \App\Support\AdminPermission::allows($this, $permission);
     }
 
     public static function generateReferralCode(): string

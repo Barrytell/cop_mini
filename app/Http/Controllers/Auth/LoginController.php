@@ -55,8 +55,13 @@ class LoginController extends Controller
 
         Auth::login($user, $request->boolean('remember'));
         $request->session()->regenerate();
+        $request->session()->forget('totp_passed');
 
         $user->forceFill(['last_login_at' => now()])->save();
+
+        if ($user->isAdmin() && $user->totp_confirmed_at !== null) {
+            return redirect()->route('admin.totp.challenge');
+        }
 
         return redirect()->intended($redirects->url($user));
     }

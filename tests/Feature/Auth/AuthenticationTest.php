@@ -102,7 +102,9 @@ class AuthenticationTest extends TestCase
     {
         $member = User::factory()->create();
         $pending = User::factory()->pending()->create();
-        $admin = User::factory()->create(['role' => UserRole::Admin]);
+        $admin = User::factory()->admin()->create([
+            'permissions' => [\App\Support\AdminPermission::DASHBOARD, \App\Support\AdminPermission::SETTINGS],
+        ]);
 
         $this->get('/member/dashboard')->assertRedirect(route('login'));
         $this->get('/admin')->assertRedirect(route('login'));
@@ -115,6 +117,7 @@ class AuthenticationTest extends TestCase
 
         $this->actingAs($admin)->get('/admin')->assertOk();
         $this->actingAs($admin)->get('/admin/settings')->assertOk();
+        $this->actingAs($admin)->get('/admin/members')->assertForbidden();
     }
 
     public function test_logout_ends_the_session(): void

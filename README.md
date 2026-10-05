@@ -118,7 +118,22 @@ The marketing site is the navy and gold pages under `/`. Copy lives in the datab
 
 ## Admin
 
-`/admin` is limited to `admin` and `super_admin`. Settings (unit price, minimum payment, referral bonus, site name, contact email, social links) and the audit log live there. Every settings save records who changed what, the previous and new values, and the IP address.
+`/admin` is limited to `admin` and `super_admin`, with a collapsible sidebar (desktop) and drawer (mobile). Granular permissions cover dashboard, members, payments, settings, referrals, communications, CMS, banners, support, admins, reports, and system. `super_admin` always has full access. Regular admins with an empty permission list get dashboard and support only.
+
+- **Dashboard** — KPI cards, signup/revenue charts with date filters, recent payments, and pending counts.
+- **Members** — searchable/filterable/paginated list, detail (profile, payments, ledger, referrals), activate/suspend, edit, password reset, units adjust (`admin_adjustment` ledger note required), soft delete/restore, CSV export. Impersonation is `super_admin` only and is audited; return via the gold banner.
+- **Payments** — filters, gateway payload, Flutterwave re-verify, manual mark-successful (`super_admin`, audited), refunds log, CSV export.
+- **Unit & settings** — unit price (future payments only; history in `setting_changes`), referral bonus, minimum payment, registration / referral programme / maintenance toggles. Site settings (name, contact, social, map) stay under Site settings.
+- **Referrals** — list, leaderboard, manual reward/reverse (audited).
+- **Communications** — announcements (audience, pin, schedule, email/in-app queue, attachments), meetings + RSVP export, bulk email/SMS-ready composer, email templates.
+- **CMS** — pages, posts/categories, FAQ, testimonials, team, gallery, downloads, menus.
+- **Banners** — upload, reorder, enable/disable, home or member dashboard placement, preview.
+- **Contact & support** — contact inbox and member tickets with reply/close.
+- **Admins** — create/edit admins, assign permissions, TOTP 2FA setup/challenge.
+- **System** — audit log, queue/failed jobs, webhook log, last reconcile, backup trigger.
+- **Reports** — financial/membership/units/referral summary with date filters, CSV and PDF export.
+
+Every admin write goes through policies or permission checks, FormRequest/controller validation, and the audit log. Optional admin TOTP: after enable, login redirects to `/admin/totp/challenge` until verified for that session.
 
 ## Deploy
 

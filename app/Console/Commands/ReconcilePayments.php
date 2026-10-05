@@ -60,6 +60,8 @@ class ReconcilePayments extends Command
                 }
             });
 
+        cache()->put('payments.last_reconcile_at', now()->toIso8601String());
+
         $this->info("Confirmed {$confirmed}, failed {$failed}, abandoned {$abandoned}, still pending {$waiting}.");
 
         return self::SUCCESS;

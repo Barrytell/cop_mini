@@ -68,8 +68,8 @@ class PaymentController extends Controller
         ConfirmPayment $confirmPayment,
         RedirectsAuthenticatedUser $redirects,
     ): RedirectResponse {
-        $transactionId = (string) $request->query('transaction_id', '');
-        $txRef = (string) $request->query('tx_ref', '');
+        $transactionId = $this->queryString($request, 'transaction_id');
+        $txRef = $this->queryString($request, 'tx_ref');
 
         $payment = Payment::query()
             ->where('tx_ref', $txRef)
@@ -82,7 +82,7 @@ class PaymentController extends Controller
                 ->withErrors(['amount_usd' => 'We could not match that payment.']);
         }
 
-        if ($transactionId === '' && strtolower((string) $request->query('status')) === 'cancelled') {
+        if ($transactionId === '' && strtolower($this->queryString($request, 'status')) === 'cancelled') {
             if ($payment->status === PaymentStatus::Pending) {
                 $payment->forceFill(['status' => PaymentStatus::Cancelled])->save();
             }
@@ -131,6 +131,13 @@ class PaymentController extends Controller
         ]);
 
         return $pdf->download('receipt-'.$payment->tx_ref.'.pdf');
+    }
+
+    private function queryString(Request $request, string $key): string
+    {
+        $value = $request->query($key);
+
+        return is_string($value) ? $value : '';
     }
 
     private function backToCheckout(Request $request): RedirectResponse

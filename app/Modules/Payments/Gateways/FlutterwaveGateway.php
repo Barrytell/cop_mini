@@ -192,25 +192,153 @@ class FlutterwaveGateway implements PaymentGatewayInterface
     }
 
     /**
-     * Pull the transaction amount out of the raw JSON so a float never enters the money path.
-     * The amount beside "currency" inside "data" is the charged amount.
+     * Pull data.amount out of the raw JSON so a float never enters the money path.
+     * Nested objects are ignored, so a customer or meta amount cannot replace the charge.
      */
     private function amountFromBody(string $body): string
     {
-        $subject = $body;
+        $data = $this->jsonObjectAfterKey($body, 'data') ?? $body;
+        $amount = $this->topLevelJsonNumber($this->blankNested($data), 'amount');
 
-        if (preg_match('/"data"\s*:\s*(\{.*\})/s', $body, $dataMatch) === 1) {
-            $subject = $dataMatch[1];
-        }
-
-        $matched = preg_match('/"amount"\s*:\s*"?(?<amount>\d+(?:\.\d+)?)"?\s*,\s*"currency"/', $subject, $matches) === 1
-            || preg_match('/"amount"\s*:\s*"?(?<amount>\d+(?:\.\d+)?)"?/', $subject, $matches) === 1;
-
-        if (! $matched) {
+        if ($amount === null) {
             throw new PaymentGatewayException('Verification response did not include an amount.');
         }
 
-        return Money::normalize($matches['amount'], 2);
+        return Money::normalize($amount, 2);
+    }
+
+    private function jsonObjectAfterKey(string $json, string $key): ?string
+    {
+        if (preg_match('/"'.preg_quote($key, '/').'"\s*:\s*\{/', $json, $matches, PREG_OFFSET_CAPTURE) !== 1) {
+            return null;
+        }
+
+        $start = $matches[0][1] + strlen($matches[0][0]) - 1;
+        $length = strlen($json);
+        $depth = 0;
+        $inString = false;
+        $escape = false;
+
+        for ($i = $start; $i < $length; $i++) {
+            $character = $json[$i];
+
+            if ($inString) {
+                if ($escape) {
+                    $escape = false;
+
+                    continue;
+                }
+
+                if ($character === '\\') {
+                    $escape = true;
+
+                    continue;
+                }
+
+                if ($character === '"') {
+                    $inString = false;
+                }
+
+                continue;
+            }
+
+            if ($character === '"') {
+                $inString = true;
+
+                continue;
+            }
+
+            if ($character === '{') {
+                $depth++;
+
+                continue;
+            }
+
+            if ($character === '}') {
+                $depth--;
+
+                if ($depth === 0) {
+                    return substr($json, $start, $i - $start + 1);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Replace nested objects and arrays with spaces so a later search only sees top-level keys.
+     */
+    private function blankNested(string $json): string
+    {
+        $length = strlen($json);
+        $depth = 0;
+        $inString = false;
+        $escape = false;
+        $flat = '';
+
+        for ($i = 0; $i < $length; $i++) {
+            $character = $json[$i];
+            $hidden = $depth > 1 || ($inString && $depth > 1);
+
+            if ($inString) {
+                $flat .= $hidden ? ' ' : $character;
+
+                if ($escape) {
+                    $escape = false;
+
+                    continue;
+                }
+
+                if ($character === '\\') {
+                    $escape = true;
+
+                    continue;
+                }
+
+                if ($character === '"') {
+                    $inString = false;
+                }
+
+                continue;
+            }
+
+            if ($character === '"') {
+                $inString = true;
+                $flat .= $depth > 1 ? ' ' : $character;
+
+                continue;
+            }
+
+            if ($character === '{' || $character === '[') {
+                $depth++;
+                $flat .= $depth > 1 ? ' ' : $character;
+
+                continue;
+            }
+
+            if ($character === '}' || $character === ']') {
+                $flat .= $depth > 1 ? ' ' : $character;
+                $depth--;
+
+                continue;
+            }
+
+            $flat .= $depth > 1 ? ' ' : $character;
+        }
+
+        return $flat;
+    }
+
+    private function topLevelJsonNumber(string $json, string $key): ?string
+    {
+        $matched = preg_match(
+            '/"'.preg_quote($key, '/').'"\s*:\s*"?(?<amount>\d+(?:\.\d+)?)"?/',
+            $json,
+            $matches,
+        ) === 1;
+
+        return $matched ? $matches['amount'] : null;
     }
 
     private function baseUrl(): string

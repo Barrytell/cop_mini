@@ -7,8 +7,10 @@ namespace App\Models;
 use App\Enums\UserRole;
 use App\Enums\UserStatus;
 use App\Modules\Announcements\Models\Announcement;
+use App\Modules\Meetings\Models\MeetingRsvp;
 use App\Modules\Payments\Models\Payment;
 use App\Modules\Referrals\Models\Referral;
+use App\Modules\Support\Models\SupportTicket;
 use App\Modules\Units\Models\UnitLedgerEntry;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -31,6 +33,17 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'phone',
         'country',
+        'avatar_path',
+        'kin_name',
+        'kin_relationship',
+        'kin_phone',
+        'payout_bank_name',
+        'payout_account_name',
+        'payout_account_number',
+        'payout_routing_code',
+        'notify_payments',
+        'notify_announcements',
+        'notify_meetings',
         'password',
         'role',
         'status',
@@ -76,6 +89,16 @@ class User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
             'role' => UserRole::class,
             'status' => UserStatus::class,
+            'kin_name' => 'encrypted',
+            'kin_relationship' => 'encrypted',
+            'kin_phone' => 'encrypted',
+            'payout_bank_name' => 'encrypted',
+            'payout_account_name' => 'encrypted',
+            'payout_account_number' => 'encrypted',
+            'payout_routing_code' => 'encrypted',
+            'notify_payments' => 'boolean',
+            'notify_announcements' => 'boolean',
+            'notify_meetings' => 'boolean',
         ];
     }
 
@@ -127,6 +150,16 @@ class User extends Authenticatable implements MustVerifyEmail
     public function announcements(): HasMany
     {
         return $this->hasMany(Announcement::class, 'created_by');
+    }
+
+    public function meetingRsvps(): HasMany
+    {
+        return $this->hasMany(MeetingRsvp::class);
+    }
+
+    public function supportTickets(): HasMany
+    {
+        return $this->hasMany(SupportTicket::class);
     }
 
     protected static function newFactory(): UserFactory

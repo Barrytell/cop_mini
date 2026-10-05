@@ -21,4 +21,13 @@ class MoneyTest extends TestCase
         $this->assertSame(0, Money::compare('10', '10.00'));
         $this->assertSame(1, Money::compare('10.01', '10.00'));
     }
+
+    public function test_present_keeps_zeros_that_belong_to_the_whole_number(): void
+    {
+        $this->assertSame('10', Money::present('10'));
+        $this->assertSame('10', Money::present('10.00'));
+        $this->assertSame('100', Money::present('100.000000'));
+        $this->assertSame('0.01', Money::present('0.010000'));
+        $this->assertSame('10.5', Money::present('10.50'));
+    }
 }

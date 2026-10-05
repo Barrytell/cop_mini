@@ -10,6 +10,7 @@ use Database\Factories\MeetingFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Meeting extends Model
 {
@@ -39,6 +40,16 @@ class Meeting extends Model
     public function organizer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function rsvps(): HasMany
+    {
+        return $this->hasMany(MeetingRsvp::class);
+    }
+
+    public function rsvpFor(User $user): ?MeetingRsvp
+    {
+        return $this->rsvps->firstWhere('user_id', $user->id);
     }
 
     protected static function newFactory(): MeetingFactory

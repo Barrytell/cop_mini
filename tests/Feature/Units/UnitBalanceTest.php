@@ -172,6 +172,27 @@ class UnitBalanceTest extends TestCase
         $this->assertSame(0, app(UnitBalanceService::class)->balance($member));
     }
 
+    public function test_a_deleted_referrer_still_receives_the_bonus_once(): void
+    {
+        $referrer = User::factory()->create();
+        $member = User::factory()->pending()->create();
+        app(AttachReferral::class)->handle($member, $referrer->referral_code);
+        $referrer->delete();
+
+        $payment = Payment::factory()->create([
+            'user_id' => $member->id,
+            'units_purchased' => 1000,
+            'type' => PaymentType::Initial,
+            'status' => PaymentStatus::Pending,
+        ]);
+
+        app(ConfirmPayment::class)->handle($payment, $this->verification($payment));
+
+        $this->assertSame(2, app(UnitBalanceService::class)->balance($referrer));
+        $this->assertSame(ReferralStatus::Rewarded, $member->referralReceived->fresh()->status);
+        $this->assertSame(1, $referrer->ledgerEntries()->where('type', LedgerType::ReferralBonus)->count());
+    }
+
     public function test_the_dashboard_still_renders_after_a_referred_member_is_deleted(): void
     {
         $referrer = User::factory()->create();

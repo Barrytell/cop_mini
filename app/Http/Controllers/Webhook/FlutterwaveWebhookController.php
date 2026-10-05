@@ -27,14 +27,16 @@ class FlutterwaveWebhookController extends Controller
             abort(401);
         }
 
-        $event = (string) $request->input('event', 'charge.completed');
+        $event = $request->input('event', 'charge.completed');
 
-        if (! in_array($event, ['charge.completed', 'charge.failed'], true)) {
+        if (! is_string($event) || ! in_array($event, ['charge.completed', 'charge.failed'], true)) {
             return response()->json(['message' => 'ignored']);
         }
 
-        $transactionId = (string) data_get($request->all(), 'data.id', '');
-        $txRef = (string) data_get($request->all(), 'data.tx_ref', '');
+        $transactionId = data_get($request->all(), 'data.id');
+        $txRef = data_get($request->all(), 'data.tx_ref');
+        $transactionId = is_scalar($transactionId) ? (string) $transactionId : '';
+        $txRef = is_scalar($txRef) ? (string) $txRef : '';
 
         if ($transactionId === '' && $txRef === '') {
             return response()->json(['message' => 'Missing transaction id.'], 422);
@@ -53,7 +55,7 @@ class FlutterwaveWebhookController extends Controller
         $payment = Payment::query()->where('tx_ref', $verification->txRef)->first();
 
         if ($payment === null) {
-            return response()->json(['message' => 'Payment not found.'], 404);
+            return response()->json(['message' => 'ignored']);
         }
 
         $confirmPayment->handle($payment, $verification);

@@ -23,10 +23,12 @@ class InitiatePaymentRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        $currency = strtoupper(trim((string) $this->input('currency', 'USD')));
+        $amount = $this->input('amount_usd');
+        $currency = $this->input('currency', 'USD');
+        $currency = is_string($currency) ? strtoupper(trim($currency)) : '';
 
         $this->merge([
-            'amount_usd' => trim((string) $this->input('amount_usd')),
+            'amount_usd' => is_string($amount) ? trim($amount) : '',
             'currency' => $currency === '' ? 'USD' : $currency,
         ]);
     }

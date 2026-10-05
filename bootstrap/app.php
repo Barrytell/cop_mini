@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\CaptureReferralCode;
 use App\Http\Middleware\EnsureAccountIsNotSuspended;
 use App\Http\Middleware\EnsureMemberIsActive;
 use App\Http\Middleware\EnsureUserHasRole;
@@ -28,6 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->web(append: [
             SecurityHeaders::class,
+            CaptureReferralCode::class,
         ]);
 
         $middleware->validateCsrfTokens(except: [

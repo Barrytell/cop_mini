@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Announcement extends Model
 {
@@ -35,6 +36,16 @@ class Announcement extends Model
     public function author(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function reads(): HasMany
+    {
+        return $this->hasMany(AnnouncementRead::class);
+    }
+
+    public function readBy(User $user): bool
+    {
+        return $this->reads->contains(fn (AnnouncementRead $read): bool => $read->user_id === $user->id);
     }
 
     public function scopePublished(Builder $query): Builder

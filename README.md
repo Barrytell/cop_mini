@@ -92,6 +92,17 @@ Every confirmation goes through `ConfirmPayment`, which locks the payment row. T
 
 Units are calculated from the USD amount. If the member pays in another supported currency, Flutterwave's rate endpoint supplies the charge amount. Card, bank transfer, USSD, and mobile money are requested through `payment_options` for the currencies that support them.
 
+## Member area
+
+Signed-in members use `/member`. The dashboard and unit purchase page stay limited to active members. Pending members can open payments, referrals, the units statement, announcements, meetings, support, notifications, and profile.
+
+- A `?ref=` code on any public page is stored in the session and in a `referral_code` cookie for 30 days, then attached when that visitor registers. A member's own code is ignored. The bonus is not paid at signup.
+- `referral_bonus_units` (default 2) is credited once, after the referred member's first payment is confirmed. The row is `referral_bonus` on `units_ledger` and `rewarded` on `referrals`. A second payment, a repeated confirmation, or a second attach does not pay it again.
+- The units statement at `/member/units` filters by type and date and exports CSV.
+- Profile payout and next-of-kin fields are encrypted at rest. Notification preferences are `notify_payments`, `notify_announcements`, and `notify_meetings`.
+- Announcements, meetings (with RSVP), the notification bell, and support tickets live under `/member`. Admins reply from `/admin/support`.
+- Banners are the `x-banner-slider` component, used on the home page and the member dashboard.
+
 ## Admin
 
 `/admin` is limited to `admin` and `super_admin`. Settings (unit price, minimum payment, referral bonus, site name, contact email, social links) and the audit log live there. Every settings save records who changed what, the previous and new values, and the IP address.

@@ -28,6 +28,87 @@ function unitsFrom(amount, price) {
 }
 
 document.addEventListener('alpine:init', () => {
+    Alpine.data('bannerSlider', (count) => ({
+        index: 0,
+        count,
+        paused: false,
+        running: false,
+        reduced: false,
+        timer: null,
+        touchX: 0,
+        init() {
+            this.reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+            if (this.reduced || this.count < 2) {
+                return;
+            }
+
+            this.running = true;
+            this.timer = setInterval(() => {
+                if (!this.paused && this.running) {
+                    this.next();
+                }
+            }, 5000);
+        },
+        destroy() {
+            clearInterval(this.timer);
+        },
+        next() {
+            this.index = (this.index + 1) % this.count;
+        },
+        prev() {
+            this.index = (this.index - 1 + this.count) % this.count;
+        },
+        go(nextIndex) {
+            this.index = nextIndex;
+        },
+        pause() {
+            this.paused = true;
+        },
+        resume() {
+            this.paused = false;
+        },
+        toggle() {
+            this.running = !this.running;
+        },
+        onTouchStart(event) {
+            this.paused = true;
+            this.touchX = event.changedTouches[0].clientX;
+        },
+        onTouchEnd(event) {
+            const delta = event.changedTouches[0].clientX - this.touchX;
+
+            if (delta > 48) {
+                this.prev();
+            } else if (delta < -48) {
+                this.next();
+            }
+
+            this.paused = false;
+        },
+    }));
+
+    Alpine.data('copyText', (value) => ({
+        copied: false,
+        async copy() {
+            try {
+                await navigator.clipboard.writeText(value);
+            } catch (error) {
+                const field = document.createElement('textarea');
+                field.value = value;
+                document.body.appendChild(field);
+                field.select();
+                document.execCommand('copy');
+                field.remove();
+            }
+
+            this.copied = true;
+            setTimeout(() => {
+                this.copied = false;
+            }, 2000);
+        },
+    }));
+
     Alpine.data('unitQuote', () => ({
         amount: '',
         currency: 'USD',
@@ -37,6 +118,7 @@ document.addEventListener('alpine:init', () => {
         chargeLabel: '',
         sending: false,
         quoteUrl: '',
+        quoteRequest: 0,
         init() {
             this.price = this.$el.dataset.unitPrice || '0.01';
             this.priceLabelText = this.$el.dataset.priceLabel || this.price;
@@ -52,6 +134,7 @@ document.addEventListener('alpine:init', () => {
             return this.priceLabelText;
         },
         calculate() {
+            const requestId = ++this.quoteRequest;
             this.units = unitsFrom(this.amount, this.price);
             this.chargeLabel = '';
 
@@ -69,6 +152,10 @@ document.addEventListener('alpine:init', () => {
             })
                 .then((response) => response.json().then((body) => ({ ok: response.ok, body })))
                 .then(({ ok, body }) => {
+                    if (requestId !== this.quoteRequest) {
+                        return;
+                    }
+
                     if (!ok) {
                         this.chargeLabel = body.message || 'Flutterwave could not price this currency.';
                         return;
@@ -78,6 +165,10 @@ document.addEventListener('alpine:init', () => {
                     this.chargeLabel = `Flutterwave will charge ${body.charge_amount} ${body.charge_currency}.`;
                 })
                 .catch(() => {
+                    if (requestId !== this.quoteRequest) {
+                        return;
+                    }
+
                     this.chargeLabel = 'Flutterwave did not respond. You can still submit, and the rate will be checked again.';
                 });
         },

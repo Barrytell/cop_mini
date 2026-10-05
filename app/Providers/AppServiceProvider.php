@@ -24,8 +24,10 @@ use App\Policies\PagePolicy;
 use App\Policies\PaymentPolicy;
 use App\Policies\ReferralPolicy;
 use App\Policies\SettingPolicy;
+use App\Policies\SupportTicketPolicy;
 use App\Policies\UnitLedgerPolicy;
 use App\Policies\UserPolicy;
+use App\Modules\Support\Models\SupportTicket;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -62,6 +64,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Banner::class, BannerPolicy::class);
         Gate::policy(Setting::class, SettingPolicy::class);
         Gate::policy(AuditLog::class, AuditLogPolicy::class);
+        Gate::policy(SupportTicket::class, SupportTicketPolicy::class);
 
         Event::listen(Registered::class, SendEmailVerificationNotification::class);
 
@@ -77,6 +80,10 @@ class AppServiceProvider extends ServiceProvider
 
         RateLimiter::for('webhooks', function (Request $request) {
             return Limit::perMinute(120)->by((string) $request->ip());
+        });
+
+        RateLimiter::for('support', function (Request $request) {
+            return Limit::perMinute(5)->by((string) ($request->user()?->id ?: $request->ip()));
         });
 
         if ($this->app->environment('production')) {
@@ -104,6 +111,23 @@ class AppServiceProvider extends ServiceProvider
                 $view->with('socialLinks', $defaults['social_links']);
                 $view->with('navPages', collect());
             }
+        });
+
+        View::composer('layouts.member', function ($view): void {
+            $user = auth()->user();
+
+            if ($user === null) {
+                $view->with('unreadNotificationCount', 0);
+                $view->with('unreadAnnouncementCount', 0);
+
+                return;
+            }
+
+            $view->with('unreadNotificationCount', $user->unreadNotifications()->count());
+            $view->with('unreadAnnouncementCount', Announcement::query()
+                ->published()
+                ->whereDoesntHave('reads', fn ($query) => $query->where('user_id', $user->id))
+                ->count());
         });
     }
 }

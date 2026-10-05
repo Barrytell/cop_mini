@@ -21,9 +21,12 @@ class QuotePaymentRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        $amount = $this->query('amount_usd', $this->input('amount_usd'));
+        $currency = $this->query('currency', $this->input('currency', 'USD'));
+
         $this->merge([
-            'amount_usd' => trim((string) $this->query('amount_usd', $this->input('amount_usd'))),
-            'currency' => strtoupper(trim((string) $this->query('currency', $this->input('currency', 'USD')))),
+            'amount_usd' => is_string($amount) ? trim($amount) : '',
+            'currency' => is_string($currency) ? strtoupper(trim($currency)) : '',
         ]);
     }
 

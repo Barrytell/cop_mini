@@ -7,6 +7,7 @@ namespace Tests\Feature\Payments;
 use App\Enums\UserStatus;
 use App\Models\User;
 use App\Modules\Payments\Models\Payment;
+use App\Services\SettingsService;
 use App\Services\UnitBalanceService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
@@ -149,5 +150,105 @@ class FlutterwavePaymentTest extends TestCase
         $this->assertSame('cancelled', $payment->fresh()->status->value);
         $this->assertSame(UserStatus::Pending, $member->fresh()->status);
         $this->assertSame(0, app(UnitBalanceService::class)->balance($member));
+    }
+
+    public function test_a_nested_amount_cannot_replace_the_charged_amount(): void
+    {
+        $member = User::factory()->pending()->create();
+        $payment = Payment::factory()->create([
+            'user_id' => $member->id,
+            'tx_ref' => 'MM-CALLBACK-3',
+            'amount_usd' => '10.00',
+            'units_purchased' => 1000,
+        ]);
+
+        Http::fake([
+            'https://api.flutterwave.com/v3/transactions/6161/verify' => Http::response(
+                '{"status":"success","data":{"customer":{"amount":"1.00","currency":"USD"},"id":6161,"tx_ref":"MM-CALLBACK-3","charged_amount":10,"amount":"10.00","status":"successful","currency":"USD"}}',
+                200,
+                ['Content-Type' => 'application/json'],
+            ),
+        ]);
+
+        $this->actingAs($member)
+            ->get('/member/payments/callback?transaction_id=6161&tx_ref=MM-CALLBACK-3&status=successful')
+            ->assertRedirect(route('member.dashboard'));
+
+        $this->assertSame('10.00', $payment->fresh()->amount_paid);
+        $this->assertSame(1000, app(UnitBalanceService::class)->balance($member));
+    }
+
+    public function test_a_checkout_link_outside_flutterwave_is_rejected(): void
+    {
+        Http::fake([
+            'https://api.flutterwave.com/v3/payments' => Http::response([
+                'status' => 'success',
+                'data' => ['link' => 'https://evil.example/phish'],
+            ]),
+        ]);
+
+        $member = User::factory()->pending()->create();
+
+        $this->actingAs($member)
+            ->from(route('member.activate'))
+            ->post('/member/payments', ['amount_usd' => '10.00'])
+            ->assertRedirect(route('member.activate'))
+            ->assertSessionHasErrors('amount_usd');
+
+        $payment = Payment::query()->where('user_id', $member->id)->first();
+        $this->assertNotNull($payment);
+        $this->assertSame('failed', $payment->status->value);
+        $this->assertSame(0, app(UnitBalanceService::class)->balance($member));
+    }
+
+    public function test_a_whole_dollar_unit_price_is_shown_in_full(): void
+    {
+        app(SettingsService::class)->put('unit_price_usd', '10');
+
+        $member = User::factory()->create();
+
+        $this->actingAs($member)
+            ->get('/member/units/buy')
+            ->assertOk()
+            ->assertSee('data-price-label="10"', false)
+            ->assertDontSee('data-price-label="1"', false);
+
+        $this->actingAs($member)
+            ->get('/member/dashboard')
+            ->assertOk()
+            ->assertSee('price of $10.', false);
+    }
+
+    public function test_array_callback_parameters_do_not_error(): void
+    {
+        $member = User::factory()->pending()->create();
+        $payment = Payment::factory()->create([
+            'user_id' => $member->id,
+            'tx_ref' => 'MM-ARRAY-1',
+        ]);
+
+        $this->actingAs($member)
+            ->get('/member/payments/callback?transaction_id[]=1&tx_ref[]=MM-ARRAY-1&status[]=cancelled')
+            ->assertRedirect(route('member.activate'));
+
+        $this->assertSame('pending', $payment->fresh()->status->value);
+    }
+
+    public function test_a_webhook_for_an_unknown_payment_is_acknowledged(): void
+    {
+        Http::fake([
+            'https://api.flutterwave.com/v3/transactions/88/verify' => Http::response(
+                '{"status":"success","data":{"id":88,"tx_ref":"UNKNOWN-REF","amount":"10.00","currency":"USD","status":"successful"}}',
+                200,
+                ['Content-Type' => 'application/json'],
+            ),
+        ]);
+
+        $this->withHeaders(['verif-hash' => 'test-hash'])
+            ->postJson('/webhooks/flutterwave', [
+                'event' => 'charge.completed',
+                'data' => ['id' => 88],
+            ])
+            ->assertOk();
     }
 }

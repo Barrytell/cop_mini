@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ $title ?? 'Admin' }} · {{ $siteName }}</title>
+    <title>@yield('title', 'Admin') · {{ $siteName }}</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=fraunces:500,600|source-sans-3:400,500,600,700" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -17,6 +17,7 @@
                 <a href="{{ route('admin.dashboard') }}" class="inline-flex min-h-11 items-center rounded-xl px-3 font-semibold hover:bg-white/10">Overview</a>
                 <a href="{{ route('admin.settings.edit') }}" class="inline-flex min-h-11 items-center rounded-xl px-3 font-semibold hover:bg-white/10">Settings</a>
                 <a href="{{ route('admin.audit.index') }}" class="inline-flex min-h-11 items-center rounded-xl px-3 font-semibold hover:bg-white/10">Audit log</a>
+                <a href="{{ route('admin.support.index') }}" class="inline-flex min-h-11 items-center rounded-xl px-3 font-semibold hover:bg-white/10">Support</a>
             </nav>
             <form method="POST" action="{{ route('logout') }}" class="p-3">
                 @csrf
@@ -47,6 +48,7 @@
                         <a href="{{ route('admin.dashboard') }}" class="inline-flex min-h-11 items-center rounded-xl px-3 font-semibold">Overview</a>
                         <a href="{{ route('admin.settings.edit') }}" class="inline-flex min-h-11 items-center rounded-xl px-3 font-semibold">Settings</a>
                         <a href="{{ route('admin.audit.index') }}" class="inline-flex min-h-11 items-center rounded-xl px-3 font-semibold">Audit log</a>
+                        <a href="{{ route('admin.support.index') }}" class="inline-flex min-h-11 items-center rounded-xl px-3 font-semibold">Support</a>
                     </nav>
                     <form method="POST" action="{{ route('logout') }}" class="mt-auto p-3">
                         @csrf

@@ -4,7 +4,7 @@
     class="space-y-4"
     x-data="unitQuote"
     data-unit-price="{{ $unitPrice }}"
-    data-price-label="{{ rtrim(rtrim($unitPrice, '0'), '.') }}"
+    data-price-label="{{ \App\Support\Money::present((string) $unitPrice) }}"
     data-minimum="{{ old('amount_usd', $minimum) }}"
     data-currency="{{ old('currency', 'USD') }}"
     data-quote-url="{{ route('member.payments.quote') }}"

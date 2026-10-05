@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 700" role="img" aria-label="Energy holdings">
+  <rect width="1600" height="700" fill="#102820"/>
+  <rect x="260" y="300" width="28" height="260" fill="#d7c4a3"/>
+  <rect x="520" y="220" width="28" height="340" fill="#e4c57a"/>
+  <rect x="780" y="260" width="28" height="300" fill="#d7c4a3"/>
+  <rect x="1040" y="180" width="28" height="380" fill="#e4c57a"/>
+  <rect x="1300" y="280" width="28" height="280" fill="#d7c4a3"/>
+  <rect x="0" y="560" width="1600" height="140" fill="#0b1a15"/>
+</svg>

@@ -17,7 +17,7 @@ class HomeController extends Controller
     public function __invoke(): View
     {
         return view('home', [
-            'banner' => Banner::query()->active()->where('position', 'home_hero')->orderBy('sort_order')->first(),
+            'banners' => Banner::query()->active()->where('position', 'home_hero')->orderBy('sort_order')->orderBy('id')->get(),
             'announcements' => Announcement::query()->published()->latest('published_at')->limit(3)->get(),
             'meeting' => Meeting::query()
                 ->where('status', MeetingStatus::Scheduled)

@@ -83,16 +83,26 @@ class DemoSeeder extends Seeder
             ],
         );
 
-        Banner::query()->updateOrCreate(
-            ['position' => 'home_hero', 'title' => 'Pool together. Hold real assets.'],
-            [
-                'subtitle' => 'Members buy units. The cooperative puts that capital into real estate, gold, oil, and other stable holdings.',
-                'image_path' => null,
-                'link_url' => null,
-                'sort_order' => 1,
-                'is_active' => true,
-            ],
-        );
+        $slides = [
+            ['home_hero', 'Pool together. Hold real assets.', 'Members buy units in real estate, gold, oil, and other stable holdings.', 'images/banners/estate.svg', 1],
+            ['home_hero', 'Allocated gold', 'A share of the pool is held in allocated gold.', 'images/banners/gold.svg', 2],
+            ['home_hero', 'Energy holdings', 'Oil and other energy positions sit beside property.', 'images/banners/energy.svg', 3],
+            ['member_dashboard', 'Your units, your pool', 'Buy more units whenever you are ready.', 'images/banners/estate.svg', 1],
+            ['member_dashboard', 'Bring another member', 'The referral bonus posts once their first payment is confirmed.', 'images/banners/gold.svg', 2],
+        ];
+
+        foreach ($slides as [$position, $title, $subtitle, $image, $order]) {
+            Banner::query()->updateOrCreate(
+                ['position' => $position, 'title' => $title],
+                [
+                    'subtitle' => $subtitle,
+                    'image_path' => $image,
+                    'link_url' => null,
+                    'sort_order' => $order,
+                    'is_active' => true,
+                ],
+            );
+        }
 
         Page::query()->updateOrCreate(
             ['slug' => 'about'],

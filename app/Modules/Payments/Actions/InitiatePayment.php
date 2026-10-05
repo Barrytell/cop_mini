@@ -63,7 +63,11 @@ class InitiatePayment
         $existingLink = is_array($existing?->gateway_payload) ? ($existing->gateway_payload['link'] ?? null) : null;
 
         if (is_string($existingLink) && $existingLink !== '') {
-            return $existingLink;
+            if ($this->trustedCheckoutUrl($existingLink)) {
+                return $existingLink;
+            }
+
+            $this->failPending($existing, 'Flutterwave returned an unexpected checkout link.');
         }
 
         try {
@@ -98,21 +102,16 @@ class InitiatePayment
 
         try {
             $initialization = $this->gateway->initialize($payment, $user, $redirectUrl);
+
+            if (! $this->trustedCheckoutUrl($initialization->redirectUrl)) {
+                throw new PaymentGatewayException('Flutterwave returned an unexpected checkout link.');
+            }
         } catch (PaymentGatewayTimeoutException $exception) {
             throw ValidationException::withMessages([
                 'amount_usd' => $exception->getMessage(),
             ]);
         } catch (PaymentGatewayException $exception) {
-            DB::transaction(function () use ($payment, $exception): void {
-                $locked = Payment::query()->whereKey($payment->id)->lockForUpdate()->first();
-
-                if ($locked && $locked->status === PaymentStatus::Pending) {
-                    $locked->forceFill([
-                        'status' => PaymentStatus::Failed,
-                        'gateway_payload' => ['error' => $exception->getMessage()],
-                    ])->save();
-                }
-            });
+            $this->failPending($payment, $exception->getMessage());
 
             throw ValidationException::withMessages([
                 'amount_usd' => $exception->getMessage(),
@@ -124,5 +123,31 @@ class InitiatePayment
         ])->save();
 
         return $initialization->redirectUrl;
+    }
+
+    private function failPending(Payment $payment, string $message): void
+    {
+        DB::transaction(function () use ($payment, $message): void {
+            $locked = Payment::query()->whereKey($payment->id)->lockForUpdate()->first();
+
+            if ($locked && $locked->status === PaymentStatus::Pending) {
+                $locked->forceFill([
+                    'status' => PaymentStatus::Failed,
+                    'gateway_payload' => ['error' => $message],
+                ])->save();
+            }
+        });
+    }
+
+    private function trustedCheckoutUrl(string $url): bool
+    {
+        $parts = parse_url($url);
+
+        if (! is_array($parts) || isset($parts['user']) || isset($parts['pass'])) {
+            return false;
+        }
+
+        return strtolower((string) ($parts['scheme'] ?? '')) === 'https'
+            && strtolower((string) ($parts['host'] ?? '')) === 'checkout.flutterwave.com';
     }
 }

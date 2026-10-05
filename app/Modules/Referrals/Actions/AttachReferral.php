@@ -26,10 +26,16 @@ class AttachReferral
             ]);
         }
 
-        if ($referrer->id === $member->id) {
+        if ($referrer->id === $member->id || strcasecmp($referrer->email, $member->email) === 0) {
             throw ValidationException::withMessages([
                 'referral_code' => 'You cannot use your own referral code.',
             ]);
+        }
+
+        $existing = Referral::query()->where('referred_id', $member->id)->first();
+
+        if ($existing !== null) {
+            return $existing;
         }
 
         $member->forceFill(['referred_by' => $referrer->id])->save();

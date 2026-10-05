@@ -28,6 +28,28 @@ final class Money
     }
 
     /**
+     * Drop fractional trailing zeros. Zeros that belong to the whole number stay,
+     * so 10 and 10.00 both display as 10, and 0.010000 displays as 0.01.
+     */
+    public static function present(string $amount): string
+    {
+        $amount = trim($amount);
+
+        if (! preg_match('/^\d+(\.\d+)?$/', $amount) || ! str_contains($amount, '.')) {
+            return $amount;
+        }
+
+        $trimmed = rtrim(rtrim($amount, '0'), '.');
+
+        return $trimmed === '' ? '0' : $trimmed;
+    }
+
+    public static function contribution(int $units, string $unitPrice): string
+    {
+        return bcmul((string) $units, self::normalize($unitPrice, 6), 2);
+    }
+
+    /**
      * Whole units purchased. bcdiv truncates toward zero, which floors a positive count
      * so a member is never credited a fraction of a unit.
      */

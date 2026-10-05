@@ -24,9 +24,18 @@ class RegisterController extends Controller
             cookie()->queue(cookie('referral_code', $code, 60 * 24 * 30));
         }
 
+        $referralCode = strtoupper(trim((string) $request->session()->get(
+            'referral_code',
+            $request->cookie('referral_code', ''),
+        )));
+        $referrer = $referralCode !== ''
+            ? User::query()->where('referral_code', $referralCode)->first()
+            : null;
+
         return view('auth.register', [
             'countries' => config('countries'),
-            'referralCode' => $request->session()->get('referral_code', $request->cookie('referral_code')),
+            'referralCode' => $referrer?->referral_code ?? ($referralCode !== '' ? $referralCode : null),
+            'referrerName' => $referrer?->name,
         ]);
     }
 

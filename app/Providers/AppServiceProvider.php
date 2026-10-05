@@ -86,6 +86,10 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(5)->by((string) ($request->user()?->id ?: $request->ip()));
         });
 
+        RateLimiter::for('contact', function (Request $request) {
+            return Limit::perMinute(5)->by((string) $request->ip());
+        });
+
         if ($this->app->environment('production')) {
             URL::forceScheme('https');
         }
@@ -96,20 +100,48 @@ class AppServiceProvider extends ServiceProvider
             TrustProxies::at($proxies === '*' ? '*' : array_map('trim', explode(',', $proxies)));
         }
 
-        View::composer(['layouts.*', 'home', 'auth.*', 'pages.*', 'errors.*', 'member.*', 'admin.*', 'account.*'], function ($view): void {
+        View::composer([
+            'layouts.*',
+            'home',
+            'auth.*',
+            'pages.*',
+            'news.*',
+            'events.*',
+            'faq.*',
+            'testimonials.*',
+            'gallery.*',
+            'downloads.*',
+            'contact.*',
+            'errors.*',
+            'member.*',
+            'admin.*',
+            'account.*',
+        ], function ($view): void {
             $defaults = config('minimini.defaults');
 
             try {
                 $social = setting('social_links', $defaults['social_links']);
+                $view->with('accountUrl', auth()->check()
+                    ? app(\App\Support\RedirectsAuthenticatedUser::class)->url(auth()->user())
+                    : null);
                 $view->with('siteName', (string) setting('site_name', $defaults['site_name']));
                 $view->with('contactEmail', (string) setting('contact_email', $defaults['contact_email']));
                 $view->with('socialLinks', is_array($social) ? $social : []);
-                $view->with('navPages', Page::query()->published()->orderBy('title')->get(['title', 'slug']));
+                $view->with('navPages', Page::query()->inNav()->get(['title', 'slug', 'sort_order']));
+                $view->with('footerPages', Page::query()->published()->orderBy('sort_order')->orderBy('title')->get(['title', 'slug']));
+                $view->with('whatsappNumber', (string) setting('whatsapp_number', $defaults['whatsapp_number'] ?? ''));
+                $view->with('officeAddress', (string) setting('office_address', $defaults['office_address'] ?? ''));
+                $view->with('referralBonus', (int) setting('referral_bonus_units', $defaults['referral_bonus_units']));
             } catch (\Throwable) {
+                $view->with('accountUrl', null);
                 $view->with('siteName', $defaults['site_name']);
                 $view->with('contactEmail', $defaults['contact_email']);
                 $view->with('socialLinks', $defaults['social_links']);
                 $view->with('navPages', collect());
+                $view->with('footerPages', collect());
+                $view->with('whatsappNumber', (string) ($defaults['whatsapp_number'] ?? ''));
+                $view->with('officeAddress', (string) ($defaults['office_address'] ?? ''));
+                $view->with('referralBonus', (int) $defaults['referral_bonus_units']);
             }
         });
 

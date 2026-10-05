@@ -1,8 +1,11 @@
 @extends('layouts.public')
 
+@section('title', 'Log in')
+@section('robots', 'noindex, follow')
+
 @section('content')
     <div class="mx-auto max-w-lg px-4 py-10">
-        <h1 class="font-serif text-4xl font-semibold text-forest-900">Log in</h1>
+        <h1 class="font-serif text-4xl font-semibold text-navy-900">Log in</h1>
         @include('layouts.partials.flash')
         <form method="POST" action="{{ route('login') }}" class="mt-6 space-y-4 rounded-3xl bg-white p-5 ring-1 ring-stone-200">
             @csrf

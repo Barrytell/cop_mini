@@ -10,7 +10,6 @@ use App\Enums\PaymentType;
 use App\Models\User;
 use App\Modules\Announcements\Models\Announcement;
 use App\Modules\Cms\Models\Banner;
-use App\Modules\Cms\Models\Page;
 use App\Modules\Meetings\Models\Meeting;
 use App\Modules\Payments\Actions\ConfirmPayment;
 use App\Modules\Payments\Data\PaymentVerification;
@@ -104,29 +103,6 @@ class DemoSeeder extends Seeder
             );
         }
 
-        Page::query()->updateOrCreate(
-            ['slug' => 'about'],
-            [
-                'title' => 'About',
-                'excerpt' => 'A member-owned cooperative for stable assets.',
-                'body' => "minimini.org is a cooperative network. Members contribute money, receive units, and share in a pool that is invested in real estate, gold, oil, and other assets meant to hold value.\n\nA person who registers is pending until the first payment is confirmed by the payment provider. Only then does the account become active and the units land on an append-only ledger.",
-                'is_published' => true,
-                'meta_title' => 'About minimini.org',
-                'meta_description' => 'How the minimini.org cooperative works.',
-            ],
-        );
-
-        Page::query()->updateOrCreate(
-            ['slug' => 'how-it-works'],
-            [
-                'title' => 'How it works',
-                'excerpt' => 'Register, pay, and hold units.',
-                'body' => "1. Create an account. You can include a referral code from another member.\n2. Pay at least the minimum in USD. The unit price at that moment is stored on the payment.\n3. Units credited equal the amount paid divided by that snapshotted price, rounded down to a whole unit.\n4. When a person you referred becomes active, you receive the referral bonus once.\n5. Active members can buy more units whenever they want.",
-                'is_published' => true,
-                'meta_title' => 'How minimini.org works',
-                'meta_description' => 'Registration, payments, units, and referrals.',
-            ],
-        );
     }
 
     private function confirmPayment(User $user, PaymentType $type): void

@@ -1,9 +1,15 @@
 @extends('layouts.public')
 
+@section('title', 'Create an account')
+@section('robots', 'noindex, follow')
+
 @section('content')
     <div class="mx-auto max-w-lg px-4 py-10">
-        <h1 class="font-serif text-4xl font-semibold text-forest-900">Create your account</h1>
+        <h1 class="font-serif text-4xl font-semibold text-navy-900">Create your account</h1>
         <p class="mt-2 text-stone-700">You will be pending until your first payment is confirmed.</p>
+        @if (! empty($referrerName))
+            <p class="mt-4 rounded-2xl bg-gold-100 px-4 py-3 text-sm font-semibold text-navy-900">Referred by {{ $referrerName }}</p>
+        @endif
         @include('layouts.partials.flash')
         <form method="POST" action="{{ route('register') }}" class="mt-6 space-y-4 rounded-3xl bg-white p-5 ring-1 ring-stone-200">
             @csrf

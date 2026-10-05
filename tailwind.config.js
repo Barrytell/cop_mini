@@ -8,24 +8,32 @@ export default {
         './resources/**/*.blade.php',
         './resources/**/*.js',
         './resources/**/*.vue',
+        './app/Support/CmsText.php',
     ],
     theme: {
         extend: {
             colors: {
-                cream: '#f4efe6',
-                ink: '#1a1814',
+                cream: '#f6f3ee',
+                ink: '#102033',
+                navy: {
+                    50: '#f3f6fb',
+                    100: '#e4ebf5',
+                    700: '#1e3a5f',
+                    800: '#16304f',
+                    900: '#0b1f3a',
+                },
                 forest: {
-                    50: '#f2f7f4',
-                    100: '#dcebe3',
-                    700: '#1d5a48',
-                    800: '#143d33',
-                    900: '#0c2822',
+                    50: '#f3f6fb',
+                    100: '#e4ebf5',
+                    700: '#1e3a5f',
+                    800: '#16304f',
+                    900: '#0b1f3a',
                 },
                 gold: {
-                    100: '#f8efd8',
-                    400: '#e0b15a',
-                    500: '#c4922e',
-                    700: '#8a6418',
+                    100: '#f8f1de',
+                    400: '#d4bc7d',
+                    500: '#c4a35a',
+                    700: '#786028',
                 },
             },
             fontFamily: {

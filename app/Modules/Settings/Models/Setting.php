@@ -26,6 +26,12 @@ class Setting extends Model
 
     public const SOCIAL_LINKS = 'social_links';
 
+    public const WHATSAPP_NUMBER = 'whatsapp_number';
+
+    public const OFFICE_ADDRESS = 'office_address';
+
+    public const MAP_EMBED_URL = 'map_embed_url';
+
     /**
      * @var array<string, array{type: SettingType, group: string}>
      */
@@ -36,6 +42,9 @@ class Setting extends Model
         self::SITE_NAME => ['type' => SettingType::String, 'group' => 'general'],
         self::CONTACT_EMAIL => ['type' => SettingType::String, 'group' => 'general'],
         self::SOCIAL_LINKS => ['type' => SettingType::Json, 'group' => 'social'],
+        self::WHATSAPP_NUMBER => ['type' => SettingType::String, 'group' => 'general'],
+        self::OFFICE_ADDRESS => ['type' => SettingType::String, 'group' => 'general'],
+        self::MAP_EMBED_URL => ['type' => SettingType::String, 'group' => 'general'],
     ];
 
     protected $fillable = [

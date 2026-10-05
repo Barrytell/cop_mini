@@ -1,8 +1,11 @@
 @extends('layouts.public')
 
+@section('title', 'Reset your password')
+@section('robots', 'noindex, follow')
+
 @section('content')
     <div class="mx-auto max-w-lg px-4 py-10">
-        <h1 class="font-serif text-4xl font-semibold text-forest-900">Reset your password</h1>
+        <h1 class="font-serif text-4xl font-semibold text-navy-900">Reset your password</h1>
         <p class="mt-2 text-stone-700">We will email a reset link if the address belongs to an account.</p>
         @include('layouts.partials.flash')
         <form method="POST" action="{{ route('password.email') }}" class="mt-6 space-y-4 rounded-3xl bg-white p-5 ring-1 ring-stone-200">

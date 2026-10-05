@@ -31,6 +31,9 @@ class SettingController extends Controller
             'minimum' => (string) setting('min_payment_usd', '10.00'),
             'siteName' => (string) setting('site_name', 'minimini.org'),
             'contactEmail' => (string) setting('contact_email', 'hello@minimini.org'),
+            'whatsappNumber' => (string) setting('whatsapp_number', ''),
+            'officeAddress' => (string) setting('office_address', ''),
+            'mapEmbedUrl' => (string) setting('map_embed_url', ''),
             'social' => $social,
         ]);
     }
@@ -51,6 +54,9 @@ class SettingController extends Controller
             'min_payment_usd' => (string) $settings->get('min_payment_usd', '10.00'),
             'site_name' => (string) $settings->get('site_name', 'minimini.org'),
             'contact_email' => (string) $settings->get('contact_email', 'hello@minimini.org'),
+            'whatsapp_number' => (string) $settings->get('whatsapp_number', ''),
+            'office_address' => (string) $settings->get('office_address', ''),
+            'map_embed_url' => (string) $settings->get('map_embed_url', ''),
             'social_links' => $settings->get('social_links', config('minimini.defaults.social_links')),
         ];
 
@@ -60,6 +66,9 @@ class SettingController extends Controller
             'min_payment_usd' => Money::normalize($request->string('min_payment_usd')->toString(), 2),
             'site_name' => $request->string('site_name')->toString(),
             'contact_email' => $request->string('contact_email')->toString(),
+            'whatsapp_number' => (string) $request->input('whatsapp_number', ''),
+            'office_address' => (string) $request->input('office_address', ''),
+            'map_embed_url' => (string) $request->input('map_embed_url', ''),
             'social_links' => $social,
         ];
 

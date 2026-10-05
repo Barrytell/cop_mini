@@ -30,6 +30,9 @@ class UpdateSettingsRequest extends FormRequest
             'min_payment_usd' => trim((string) $this->input('min_payment_usd')),
             'site_name' => trim((string) $this->input('site_name')),
             'contact_email' => strtolower(trim((string) $this->input('contact_email'))),
+            'whatsapp_number' => ($phone = trim((string) $this->input('whatsapp_number'))) === '' ? null : $phone,
+            'office_address' => ($address = trim((string) $this->input('office_address'))) === '' ? null : $address,
+            'map_embed_url' => ($map = trim((string) $this->input('map_embed_url'))) === '' ? null : $map,
             ...$social,
         ]);
     }
@@ -74,6 +77,13 @@ class UpdateSettingsRequest extends FormRequest
             'social_instagram' => ['nullable', 'string', 'max:255', 'url:http,https'],
             'social_linkedin' => ['nullable', 'string', 'max:255', 'url:http,https'],
             'social_youtube' => ['nullable', 'string', 'max:255', 'url:http,https'],
+            'whatsapp_number' => ['nullable', 'string', 'regex:/^\+?[0-9][0-9\s().-]{7,18}$/'],
+            'office_address' => ['nullable', 'string', 'max:500'],
+            'map_embed_url' => ['nullable', 'string', 'max:500', function (string $attribute, mixed $value, \Closure $fail): void {
+                if (! is_string($value) || \App\Support\MapEmbed::url($value) === null) {
+                    $fail('Use an https link from OpenStreetMap or Google Maps.');
+                }
+            }],
         ];
     }
 }

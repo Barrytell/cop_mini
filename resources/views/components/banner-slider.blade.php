@@ -16,13 +16,14 @@
                 <article
                     class="absolute inset-0 transition duration-700 motion-reduce:transition-none"
                     :class="index === {{ $index }} ? 'opacity-100' : 'pointer-events-none opacity-0'"
+                    :inert="index !== {{ $index }}"
                     :aria-hidden="index === {{ $index }} ? 'false' : 'true'"
                     aria-roledescription="slide"
                     aria-label="{{ $index + 1 }} of {{ $banners->count() }}"
                 >
-                    @if ($banner->image_path)
+                    @if ($src = public_file($banner->image_path))
                         <img
-                            src="{{ asset($banner->image_path) }}"
+                            src="{{ $src }}"
                             alt=""
                             class="h-full w-full object-cover"
                             width="1600"
@@ -71,7 +72,7 @@
                         <span class="h-2.5 w-2.5 rounded-full" :class="index === {{ $index }} ? 'bg-white' : 'bg-white/50'"></span>
                     </button>
                 @endforeach
-                <button type="button" class="inline-flex h-11 items-center rounded-full bg-white/90 px-3 text-sm font-semibold text-forest-900" @click="toggle()" x-text="running ? 'Pause' : 'Play'" :aria-pressed="(!running).toString()"></button>
+                <button type="button" class="inline-flex h-11 items-center rounded-full bg-white/90 px-3 text-sm font-semibold text-forest-900" x-show="!reduced" x-cloak @click="toggle()" x-text="running ? 'Pause' : 'Play'" :aria-pressed="running ? 'false' : 'true'">Pause</button>
             </div>
         @endif
     </section>

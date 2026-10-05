@@ -15,6 +15,18 @@
             <input class="field" id="contact_email" name="contact_email" type="email" value="{{ old('contact_email', $contactEmail) }}" required maxlength="255">
         </div>
         <div>
+            <label class="label" for="whatsapp_number">WhatsApp number</label>
+            <input class="field" id="whatsapp_number" name="whatsapp_number" type="text" value="{{ old('whatsapp_number', $whatsappNumber) }}" maxlength="24" placeholder="+2348000000000">
+        </div>
+        <div>
+            <label class="label" for="office_address">Office address</label>
+            <textarea class="field min-h-28" id="office_address" name="office_address" maxlength="500">{{ old('office_address', $officeAddress) }}</textarea>
+        </div>
+        <div>
+            <label class="label" for="map_embed_url">Map embed URL</label>
+            <input class="field" id="map_embed_url" name="map_embed_url" type="url" value="{{ old('map_embed_url', $mapEmbedUrl) }}" maxlength="500" placeholder="https://www.openstreetmap.org/export/embed.html">
+        </div>
+        <div>
             <label class="label" for="unit_price_usd">Unit price (USD)</label>
             <input class="field" id="unit_price_usd" name="unit_price_usd" type="text" inputmode="decimal" value="{{ old('unit_price_usd', $unitPrice) }}" required>
         </div>
